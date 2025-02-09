@@ -30,20 +30,29 @@ impl Display for LogicalExpr {
 
 impl LogicalExpr {
     pub fn to_field(&self, plan: &LogicalPlan) -> Result<Field> {
-        match self {
-            LogicalExpr::Column(e) => e.to_field_from_plan(plan),
-            LogicalExpr::Literal(e) => {
-                let data_type = e.data_type();
-                Ok(Field::new(self.to_string(), data_type, true))
-            }
-            _ => unimplemented!(),
-        }
+        let data_type = self.data_type(&plan.schema())?;
+        Ok(Field::new(self.to_string(), data_type, true))
+        // match self {
+        //     LogicalExpr::Column(e) => e.to_field_from_plan(plan),
+        //     LogicalExpr::Literal(e) => {
+        //         let data_type = self.data_type(&plan.schema())?;
+        //         Ok(Field::new(self.to_string(), data_type, true))
+        //     }
+        //     LogicalExpr::Binary(e)
+        //     _ => unimplemented!(),
+        // }
     }
 
     /// Returns the [`DataType`] of the expression.
     pub fn data_type(&self, schema: &Schema) -> Result<DataType> {
         match self {
             LogicalExpr::Column(e) => Ok(e.to_field(schema)?.data_type().clone()),
+            LogicalExpr::Literal(e) => Ok(e.data_type()),
+            LogicalExpr::Binary(e) => {
+                // TODO: 临时以左边为准
+                let lhs = e.lhs.data_type(schema)?;
+                Ok(lhs)
+            }
             _ => unimplemented!(),
         }
     }

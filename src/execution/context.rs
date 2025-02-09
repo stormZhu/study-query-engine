@@ -86,11 +86,26 @@ mod tests {
         let df = ctx
             .csv("testdata/csv/simple.csv", opts)?
             // .filter(col("c1").eq(lit(1)))
-            .project(vec![col("c3"), lit(1)]);
-        // .project(vec![col("c3"), col("c3").add(lit(1))]);
+            // .project(vec![col("c3"), lit(1)]);
+            .project(vec![col("c1"), col("c3"), col("c3").add(lit(1 as i64))]);
 
         let ret = df.collect()?;
-        let _ = pretty::print_batches(&[ret]);
+        // let _ = pretty::print_batches(&[ret]);
+        let results = pretty::pretty_format_batches(&[ret]).unwrap().to_string();
+        let results = results.trim().lines().collect::<Vec<_>>();
+        let expected = vec![
+            "+----+----+--------+",
+            "| c1 | c3 | c3 + 1 |",
+            "+----+----+--------+",
+            "| a  | 2  | 3      |",
+            "| b  | 3  | 4      |",
+            "| c  | 4  | 5      |",
+            "| d  | 5  | 6      |",
+            "| e  | 6  | 7      |",
+            "| f  | 7  | 8      |",
+            "+----+----+--------+",
+        ];
+        assert_eq!(results, expected);
         Ok(())
     }
 }

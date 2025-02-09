@@ -5,6 +5,7 @@ use arrow_schema::Schema;
 use crate::error::Result;
 use crate::logical::expression::expr::LogicalExpr;
 use crate::physical::expr::PhysicalExpression;
+use crate::physical::expr::binary::BinaryExpr;
 use crate::physical::expr::column::ColumnExpr;
 use crate::physical::expr::literal::LiteralExpr;
 use crate::physical::plan::{FilterExec, ProjectionExec, ScanExec};
@@ -54,6 +55,15 @@ impl Planner {
                 PhysicalExpression::Column(ColumnExpr::new(v.name.clone(), index))
             }
             LogicalExpr::Literal(v) => PhysicalExpression::Literal(LiteralExpr::new(v.clone())),
+            LogicalExpr::Binary(v) => {
+                let left = Self::create_physical_expr(schema, &v.lhs);
+                let right = Self::create_physical_expr(schema, &v.rhs);
+                PhysicalExpression::Binary(BinaryExpr::new(
+                    Arc::new(left),
+                    v.op.clone(),
+                    Arc::new(right),
+                ))
+            }
             _ => {
                 println!("expr: {:?}", expr);
                 todo!()

@@ -1,11 +1,11 @@
-use std::{fmt::Display, iter, sync::Arc};
-
+use crate::error::Result;
 use arrow::array::{
-    ArrayData, ArrayRef, BooleanArray, Float32Array, Float64Array, Int8Array, Int16Array,
-    Int32Array, Int64Array, StringArray, UInt8Array, UInt16Array, UInt32Array, UInt64Array,
+    Array, ArrayData, ArrayRef, BooleanArray, Float32Array, Float64Array, Int8Array, Int16Array,
+    Int32Array, Int64Array, Scalar, StringArray, UInt8Array, UInt16Array, UInt32Array, UInt64Array,
     make_array,
 };
 use arrow_schema::DataType;
+use std::{fmt::Display, iter, sync::Arc};
 
 #[derive(Debug, Clone)]
 pub enum ScalarValue {
@@ -104,4 +104,27 @@ impl ScalarValue {
             ScalarValue::Float64(_) => DataType::Float64,
         }
     }
+
+    pub fn to_scalar(&self) -> Result<Scalar<ArrayRef>> {
+        Ok(Scalar::new(self.to_array(1)))
+    }
+
+    // pub fn try_from_array(array: &dyn Array, index: usize) -> Result<Self> {
+    //     Ok(match array.data_type() {
+    //         DataType::Null => ScalarValue::Null,
+    //         DataType::Boolean => typed_cast!(array, index, BooleanArray, Boolean)?,
+    //         DataType::Int8 => typed_cast!(array, index, Int8Array, Int8)?,
+    //         DataType::Int16 => typed_cast!(array, index, Int16Array, Int16)?,
+    //         DataType::Int32 => typed_cast!(array, index, Int32Array, Int32)?,
+    //         DataType::Int64 => typed_cast!(array, index, Int64Array, Int64)?,
+    //         DataType::UInt8 => typed_cast!(array, index, UInt8Array, UInt8)?,
+    //         DataType::UInt16 => typed_cast!(array, index, UInt16Array, UInt16)?,
+    //         DataType::UInt32 => typed_cast!(array, index, UInt32Array, UInt32)?,
+    //         DataType::UInt64 => typed_cast!(array, index, UInt64Array, UInt64)?,
+    //         DataType::Utf8 => typed_cast!(array, index, StringArray, Utf8)?,
+    //         DataType::Float32 => typed_cast!(array, index, Float32Array, Float32)?,
+    //         DataType::Float64 => typed_cast!(array, index, Float64Array, Float64)?,
+    //         other => unimplemented!(),
+    //     })
+    // }
 }
