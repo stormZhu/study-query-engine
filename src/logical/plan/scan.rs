@@ -5,9 +5,9 @@ use crate::datasource::DataSource;
 #[derive(Debug, Clone)]
 
 pub struct Scan {
-    path: String,
-    source: Arc<dyn DataSource>,
-    projection: Option<Vec<String>>, // 为什么不用expr
+    pub path: String,
+    pub source: Arc<dyn DataSource>,
+    pub projection: Option<Vec<String>>, // 为什么不用expr
 }
 
 impl Scan {

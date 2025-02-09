@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use arrow::array::RecordBatch;
+
 use crate::{
     datasource::{CsvDataSource, CsvReadOptions},
     logical::plan::{LogicalPlan, Scan},
@@ -26,6 +28,8 @@ impl SessionContext {
 
 #[cfg(test)]
 mod tests {
+    use arrow::util::pretty;
+
     use crate::{
         datasource::CsvReadOptionsBuilder,
         execution::context::SessionContext,
@@ -50,6 +54,43 @@ mod tests {
             .join("")
         );
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_session_execute() -> anyhow::Result<()> {
+        let ctx = SessionContext::new();
+        let opts = CsvReadOptionsBuilder::default()
+            .has_header(true)
+            .delimiter(b',')
+            .quote(b'"')
+            .build()?;
+        let df = ctx
+            .csv("testdata/csv/simple.csv", opts)?
+            // .filter(col("c1").eq(lit(1)))
+            .project(vec![col("c3"), col("c2")]);
+
+        let ret = df.collect()?;
+        let _ = pretty::print_batches(&[ret]);
+        Ok(())
+    }
+
+    #[test]
+    fn test_session_execute2() -> anyhow::Result<()> {
+        let ctx = SessionContext::new();
+        let opts = CsvReadOptionsBuilder::default()
+            .has_header(true)
+            .delimiter(b',')
+            .quote(b'"')
+            .build()?;
+        let df = ctx
+            .csv("testdata/csv/simple.csv", opts)?
+            // .filter(col("c1").eq(lit(1)))
+            .project(vec![col("c3"), lit(1)]);
+        // .project(vec![col("c3"), col("c3").add(lit(1))]);
+
+        let ret = df.collect()?;
+        let _ = pretty::print_batches(&[ret]);
         Ok(())
     }
 }

@@ -1,7 +1,12 @@
 use std::fmt::Display;
 
+use anyhow::Ok;
+use arrow_schema::{DataType, Field, Schema};
+
 use super::{aggregate::AggregateExpr, binary::BinaryExpr, column::Column};
 use crate::datatypes::values::ScalarValue;
+use crate::error::Result;
+use crate::logical::plan::LogicalPlan;
 
 #[derive(Debug, Clone)]
 pub enum LogicalExpr {
@@ -23,6 +28,26 @@ impl Display for LogicalExpr {
     }
 }
 
+impl LogicalExpr {
+    pub fn to_field(&self, plan: &LogicalPlan) -> Result<Field> {
+        match self {
+            LogicalExpr::Column(e) => e.to_field_from_plan(plan),
+            LogicalExpr::Literal(e) => {
+                let data_type = e.data_type();
+                Ok(Field::new(self.to_string(), data_type, true))
+            }
+            _ => unimplemented!(),
+        }
+    }
+
+    /// Returns the [`DataType`] of the expression.
+    pub fn data_type(&self, schema: &Schema) -> Result<DataType> {
+        match self {
+            LogicalExpr::Column(e) => Ok(e.to_field(schema)?.data_type().clone()),
+            _ => unimplemented!(),
+        }
+    }
+}
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;

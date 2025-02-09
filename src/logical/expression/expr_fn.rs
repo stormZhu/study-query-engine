@@ -12,17 +12,6 @@ pub fn lit<T: LiteralExt>(value: T) -> LogicalExpr {
     value.lit()
 }
 
-//  为什么入参不加Arc呢
-pub fn binary_expr(lhs: LogicalExpr, op: Operator, rhs: LogicalExpr) -> LogicalExpr {
-    LogicalExpr::Binary(BinaryExpr::new(Arc::new(lhs), op, Arc::new(rhs)))
-}
-
-impl LogicalExpr {
-    pub fn eq(self, other: LogicalExpr) -> LogicalExpr {
-        binary_expr(self, Operator::Eq, other)
-    }
-}
-
 pub trait LiteralExt {
     fn lit(&self) -> LogicalExpr;
 }
@@ -44,3 +33,28 @@ make_lit!(u8, Uint8);
 make_lit!(u16, Uint16);
 make_lit!(u32, Uint32);
 make_lit!(u64, Uint64);
+
+pub fn binary_expr(lhs: LogicalExpr, op: Operator, rhs: LogicalExpr) -> LogicalExpr {
+    LogicalExpr::Binary(BinaryExpr::new(Arc::new(lhs), op, Arc::new(rhs)))
+}
+
+macro_rules! make_expr_fn {
+    ($fn:ident, $op:ident) => {
+        impl LogicalExpr {
+            pub fn $fn(self, other: LogicalExpr) -> LogicalExpr {
+                binary_expr(self, Operator::$op, other)
+            }
+        }
+    };
+}
+
+make_expr_fn!(eq, Eq);
+make_expr_fn!(neq, NotEq);
+make_expr_fn!(lt, Lt);
+make_expr_fn!(lt_eq, LtEq);
+make_expr_fn!(gt, Gt);
+make_expr_fn!(gt_eq, GtEq);
+make_expr_fn!(and, And);
+make_expr_fn!(or, Or);
+make_expr_fn!(add, Plus);
+make_expr_fn!(minus, Minus);

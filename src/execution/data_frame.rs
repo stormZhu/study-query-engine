@@ -1,9 +1,13 @@
 use std::sync::Arc;
 
+use crate::error::Result;
 use crate::logical::{
     expression::expr::LogicalExpr,
     plan::{Filter, LogicalPlan, Projection},
 };
+use arrow::array::RecordBatch;
+
+use super::planner::Planner;
 
 pub struct DataFrame {
     plan: LogicalPlan,
@@ -24,7 +28,13 @@ impl DataFrame {
         Self { plan }
     }
 
-    pub fn plan(self) -> LogicalPlan {
-        self.plan
+    pub fn plan(&self) -> &LogicalPlan {
+        &self.plan
+    }
+
+    pub fn collect(&self) -> Result<RecordBatch> {
+        let optimized = &self.plan;
+        let physical_plan = Planner::create_physical_plan(optimized)?;
+        physical_plan.execute()
     }
 }

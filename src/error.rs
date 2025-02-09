@@ -2,7 +2,9 @@ use std::io;
 
 use thiserror::Error;
 
-pub type Result<T> = std::result::Result<T, DBError>;
+// pub type Result<T> = std::result::Result<T, DBError>;
+
+pub type Result<T> = anyhow::Result<T>;
 
 #[derive(Error, Debug)]
 pub enum DBError {

@@ -1,5 +1,9 @@
 use std::fmt::Display;
 
+use arrow_schema::SchemaRef;
+
+use crate::physical::plan;
+
 use super::{aggregate::Aggregate, filter::Filter, projection::Projection, scan::Scan};
 
 #[derive(Debug, Clone)]
@@ -18,6 +22,15 @@ impl LogicalPlan {
             LogicalPlan::Projection(projection) => vec![&projection.input],
             // LogicalPlan::Aggregate(aggregate) => vec![&aggregate.input],
             _ => todo!(),
+        }
+    }
+
+    pub fn schema(&self) -> SchemaRef {
+        match self {
+            LogicalPlan::Scan(plan) => plan.source.schema(),
+            LogicalPlan::Projection(plan) => plan.input.schema(),
+            LogicalPlan::Filter(plan) => plan.input.schema(),
+            _ => unimplemented!(),
         }
     }
 }

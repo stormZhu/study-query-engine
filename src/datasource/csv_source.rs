@@ -55,7 +55,7 @@ impl DataSource for CsvDataSource {
         self.schema.clone()
     }
 
-    fn scan(&self, projection: Option<&Vec<String>>) -> Result<RecordBatch> {
+    fn scan(&self, projection: Option<Vec<String>>) -> Result<RecordBatch> {
         let file: File = File::open(self.path.as_str())?;
         let mut csv = arrow::csv::ReaderBuilder::new(self.schema.clone())
             .with_batch_size(1024)

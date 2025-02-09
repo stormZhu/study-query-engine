@@ -26,7 +26,7 @@ impl DataSource for MemDataSource {
         ]))
     }
 
-    fn scan(&self, projection: Option<&Vec<String>>) -> crate::error::Result<RecordBatch> {
+    fn scan(&self, projection: Option<Vec<String>>) -> crate::error::Result<RecordBatch> {
         let batch = record_batch!(
             ("c1", Utf8, ["alpha", "beta", "gamma"]),
             ("c2", Int32, [1, 2, 3]),
